@@ -26,7 +26,24 @@ export default class Queue {
   }
 
   remove() {
+    if (this.data.length <= 0) {
+      throw new Error('Not enough elements');
+    }
     return this.data.shift();
+  }
+
+  front() {
+    if (this.data.length <= 0) {
+      throw new Error('Not enough elements');
+    }
+    return this.data[this.size() - 1];
+  }
+
+  last() {
+    if (this.data.length <= 0) {
+      throw new Error('Not enough elements');
+    }
+    return this.data[0];
   }
 
   print() {
