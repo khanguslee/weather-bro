@@ -1,0 +1,33 @@
+{
+  "name": "weather-bro",
+  "version": "1.0.0",
+  "description": "ESP32 microcontroller that feeds weather data via MQTT to a MQTT Broker",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khanguslee/weather-bro.git"
+  },
+  "keywords": [
+    "mqtt"
+  ],
+  "author": "khanguslee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khanguslee/weather-bro/issues"
+  },
+  "homepage": "https://github.com/khanguslee/weather-bro#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.18.0",
+    "nodemon": "^1.19.1"
+  }
+}
