@@ -18,7 +18,11 @@ export default class Queue {
     if (this.data.length >= this._windowSize) {
       this.remove();
     }
-    this.data.push(data);
+    // Store data with the time it was added
+    const currentDate = new Date();
+    const currentTime = currentDate.getTime();
+    const storedData = { time: currentTime, data };
+    this.data.push(storedData);
   }
 
   remove() {
