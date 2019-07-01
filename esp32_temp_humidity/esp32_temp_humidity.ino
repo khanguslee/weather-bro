@@ -1,16 +1,16 @@
-"""
+/*
   Tutorial: https://randomnerdtutorials.com/esp32-mqtt-publish-subscribe-arduino-ide/
-"""
+*/
 #include <WiFi.h>
 #include <PubSubClient.h>
 
 #include "DHT.h"
 #define DHTTYPE DHT22
 
-const char* network_ssid = "SSID HERE";
-const char* network_password = "PASSWORD HERE";
+const char* network_ssid = "SSID";
+const char* network_password = "NETWORK PASSWORD";
 
-const char* mqtt_server = "MQTT BROKER IP HERE";
+const char* mqtt_server = "postman.cloudmqtt.com";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -28,7 +28,8 @@ void setup() {
 
   dht.begin();
   setup_wifi();
-  client.setServer(mqtt_server, 1883);
+  // Change below port number to 1883 for the default port that mqtt brokers use
+  client.setServer(mqtt_server, 13393);
 }
 
 void setup_wifi() {
@@ -49,7 +50,7 @@ void setup_wifi() {
 void reconnect_mqtt() {
     while (!client.connected()) {
       Serial.print("Attempting MQTT connection...");
-      if (client.connect("ESP32-ROOM")) {
+      if (client.connect("ESP32-ROOM", "USERNAME", "PASSWORD")) {
         Serial.println("connected");
       } else {
         Serial.print("failed, rc=");
