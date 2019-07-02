@@ -2,15 +2,23 @@ const sockets = {};
 
 const mqtt = require('mqtt');
 
+require('dotenv').config();
+
 sockets.init = function socketInit(server) {
   /* Connect to MQTT Broker */
   const mqttOptions = {
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD,
+    host: process.env.MQTT_SERVER,
+    port: process.env.MQTT_PORT,
     reconnectPeriod: 1000,
     connectTimeout: 5000,
-    clientId: 'mqttClient',
+    clientId: `mqtt-client_${Math.random()
+      .toString(16)
+      .substr(2, 8)}`,
   };
 
-  const mqttClient = mqtt.connect('mqtt://localhost:1883', mqttOptions);
+  const mqttClient = mqtt.connect(process.env.MQTT_SERVER, mqttOptions);
   const roomTempTopic = 'esp32/room/temperature';
   const roomHumidityTopic = 'esp32/room/humidity';
 
@@ -18,6 +26,10 @@ sockets.init = function socketInit(server) {
   mqttClient.subscribe(roomHumidityTopic);
   mqttClient.on('connect', function mqttConnected() {
     console.log('Connected to MQTT broker');
+  });
+
+  mqttClient.on('error', function mqttError(error) {
+    console.error(`MQTT error: ${error}`);
   });
 
   /* Start socket.io connection */
