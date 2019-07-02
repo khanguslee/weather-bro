@@ -9,7 +9,7 @@ import Queue from './queue.js';
 const socket = io();
 const temperatureData = new Queue(60);
 const humidityData = new Queue(60);
-const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+const margin = { top: 50, right: 50, bottom: 50, left: 100 };
 const width = 1000 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
@@ -34,13 +34,31 @@ function setupTemperatureGraph() {
     .attr('class', 'axis')
     .attr('id', 'x-axis')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%Y-%m-%d %H:%M:%S')));
+    .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M:%S')));
+
+  // Display x-axis label
+  svg
+    .append('text')
+    .attr('x', width / 2)
+    .attr('y', height + margin.top)
+    .style('text-anchor', 'middle')
+    .text('Time');
 
   svg
     .append('g')
     .attr('class', 'axis')
     .attr('id', 'y-axis')
     .call(d3.axisLeft(yScale));
+
+  // Display y-axis label
+  svg
+    .append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 0 - margin.left / 2)
+    .attr('x', 0 - height / 2)
+    .attr('dy', '1em')
+    .style('text-anchor', 'middle')
+    .text('Temperature (C)');
 
   console.log(temperatureData.data);
 }
@@ -78,7 +96,7 @@ function temperatureDataHandler(inputData) {
     .datum(temperatureData.data)
     .attr('class', 'line')
     .attr('d', line)
-    .attr('transform', `translate(50,200)`);
+    .attr('transform', `translate(${margin.left},200)`);
 
   svg
     .selectAll('.dot')
@@ -89,7 +107,7 @@ function temperatureDataHandler(inputData) {
     .attr('cx', d => xScale(d.time))
     .attr('cy', d => yScale(d.data))
     .attr('r', 3)
-    .attr('transform', `translate(50,200)`);
+    .attr('transform', `translate(${margin.left},200)`);
 }
 
 function humidityDataHandler(inputData) {
