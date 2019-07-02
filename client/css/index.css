@@ -2,12 +2,22 @@
   width: 500px;
 }
 
-.line {
+.temperature-line {
   fill: none;
   stroke: steelblue;
   stroke-width: 2px;
 }
 
-.circle {
+.temperature-dot {
   fill: steelblue;
+}
+
+.humidity-line {
+  fill: none;
+  stroke: red;
+  stroke-width: 2px;
+}
+
+.humidity-dot {
+  fill: red;
 }

@@ -13,9 +13,49 @@ const margin = { top: 50, right: 50, bottom: 50, left: 100 };
 const width = 1000 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
-function setupTemperatureGraph() {
+const maxTemperature = 50;
+const maxHumidity = 100;
+
+const yScaleTemperature = d3
+  .scaleLinear()
+  .range([height, 0])
+  .domain([0, maxTemperature]);
+
+const yScaleHumidity = d3
+  .scaleLinear()
+  .range([height, 0])
+  .domain([0, maxHumidity]);
+
+function updateXScale() {
+  let lastTime;
+  let recentTime;
+  // Check edge cases when there are no elements in either temperature or humidity data
+  if (temperatureData.size() === 0) {
+    lastTime = humidityData.last().time;
+    recentTime = humidityData.front().time;
+  } else if (humidityData.size() === 0) {
+    lastTime = temperatureData.last().time;
+    recentTime = temperatureData.front().time;
+  } else {
+    lastTime =
+      temperatureData.last().time < humidityData.last().time
+        ? temperatureData.last().time
+        : humidityData.last().time;
+    recentTime =
+      temperatureData.front().time > humidityData.front().time
+        ? temperatureData.front().time
+        : humidityData.front().time;
+  }
+
+  return d3
+    .scaleTime()
+    .domain([lastTime, recentTime])
+    .range([0, width]);
+}
+
+function setupOverviewGraph() {
   const svg = d3
-    .select('#temperature-graph')
+    .select('#overview-graph')
     .append('svg')
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
@@ -24,11 +64,7 @@ function setupTemperatureGraph() {
 
   const xScale = d3.scaleTime().range([0, width]);
 
-  const yScale = d3
-    .scaleLinear()
-    .range([height, 0])
-    .domain([0, 50]);
-
+  // Display time x-axis
   svg
     .append('g')
     .attr('class', 'axis')
@@ -36,7 +72,6 @@ function setupTemperatureGraph() {
     .attr('transform', `translate(0,${height})`)
     .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M:%S')));
 
-  // Display x-axis label
   svg
     .append('text')
     .attr('x', width / 2)
@@ -44,13 +79,13 @@ function setupTemperatureGraph() {
     .style('text-anchor', 'middle')
     .text('Time');
 
+  // Display temperature y-axis
   svg
     .append('g')
     .attr('class', 'axis')
-    .attr('id', 'y-axis')
-    .call(d3.axisLeft(yScale));
+    .attr('id', 'y-axis-temperature')
+    .call(d3.axisLeft(yScaleTemperature));
 
-  // Display y-axis label
   svg
     .append('text')
     .attr('transform', 'rotate(-90)')
@@ -60,6 +95,24 @@ function setupTemperatureGraph() {
     .style('text-anchor', 'middle')
     .text('Temperature (C)');
 
+  // Display humidity y-axis
+  svg
+    .append('g')
+    .attr('class', 'axis')
+    .attr('id', 'y-axis-humidity')
+    .attr('transform', `translate(${width},0)`)
+    .call(d3.axisRight(yScaleHumidity));
+
+  svg
+    .append('text')
+    .attr(
+      'transform',
+      `translate(${width + margin.right},${height / 2}) rotate(90)`
+    )
+    .attr('dy', '1em')
+    .style('text-anchor', 'middle')
+    .text('Humidity');
+
   console.log(temperatureData.data);
 }
 
@@ -68,54 +121,81 @@ function temperatureDataHandler(inputData) {
   temperatureData.add(parseFloat(inputData));
   temperatureData.print();
   // Remove previous data
-  d3.selectAll('.line').remove();
-  d3.selectAll('.dot').remove();
+  d3.selectAll('.temperature-line').remove();
+  d3.selectAll('.temperature-dot').remove();
 
-  const xScale = d3
-    .scaleTime()
-    .domain([temperatureData.last().time, temperatureData.front().time])
-    .range([0, width]);
+  const xScale = updateXScale();
 
-  const yScale = d3
-    .scaleLinear()
-    .range([height, 0])
-    .domain([0, 30]);
-
-  const line = d3
+  const temperatureLine = d3
     .line()
     .x(d => xScale(d.time))
-    .y(d => yScale(d.data))
+    .y(d => yScaleTemperature(d.data))
     .curve(d3.curveMonotoneX);
 
-  const svg = d3.select('#temperature-graph svg');
+  const svg = d3.select('#overview-graph svg');
   svg
     .selectAll('#x-axis')
     .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M:%S')));
   svg
     .append('path')
     .datum(temperatureData.data)
-    .attr('class', 'line')
-    .attr('d', line)
-    .attr('transform', `translate(${margin.left},200)`);
+    .attr('class', 'temperature-line')
+    .attr('d', temperatureLine)
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 
   svg
-    .selectAll('.dot')
+    .selectAll('.temperature-dot')
     .data(temperatureData.data)
     .enter()
-    .append('circle') // Uses the enter().append() method
-    .attr('class', 'dot') // Assign a class for styling
+    .append('circle')
+    .attr('class', 'temperature-dot')
     .attr('cx', d => xScale(d.time))
-    .attr('cy', d => yScale(d.data))
+    .attr('cy', d => yScaleTemperature(d.data))
     .attr('r', 3)
-    .attr('transform', `translate(${margin.left},200)`);
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 }
 
 function humidityDataHandler(inputData) {
   console.log(`Humidity: ${inputData}`);
   humidityData.add(parseFloat(inputData));
   humidityData.print();
+
+  // Remove previous data
+  d3.selectAll('.humidity-line').remove();
+  d3.selectAll('.humidity-dot').remove();
+
+  // TODO: Change xScale to check for lowest/highest values from temperature or humidity queues.
+  const xScale = updateXScale();
+
+  const humidityLine = d3
+    .line()
+    .x(d => xScale(d.time))
+    .y(d => yScaleHumidity(d.data))
+    .curve(d3.curveMonotoneX);
+
+  const svg = d3.select('#overview-graph svg');
+  svg
+    .selectAll('#x-axis')
+    .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M:%S')));
+  svg
+    .append('path')
+    .datum(humidityData.data)
+    .attr('class', 'humidity-line')
+    .attr('d', humidityLine)
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  svg
+    .selectAll('.humidity-dot')
+    .data(humidityData.data)
+    .enter()
+    .append('circle')
+    .attr('class', 'humidity-dot')
+    .attr('cx', d => xScale(d.time))
+    .attr('cy', d => yScaleHumidity(d.data))
+    .attr('r', 3)
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 }
 
-setupTemperatureGraph();
+setupOverviewGraph();
 socket.on('esp32/room/temperature', temperatureDataHandler);
 socket.on('esp32/room/humidity', humidityDataHandler);
