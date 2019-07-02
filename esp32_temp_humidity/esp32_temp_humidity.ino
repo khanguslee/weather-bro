@@ -7,15 +7,16 @@
 #include "DHT.h"
 #define DHTTYPE DHT22
 
-const char* network_ssid = "SSID";
-const char* network_password = "NETWORK PASSWORD";
+const char* network_ssid = "WIFI NETWORK";
+const char* network_password = "WIFI PASSWORD";
 
 const char* mqtt_server = "postman.cloudmqtt.com";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-const uint8_t DHTPin = 13; 
+const uint8_t DHTPin = 13;
+const uint8_t LEDPin = 25;
 DHT dht(DHTPin, DHTTYPE);
 
 float temperature = 0;
@@ -25,6 +26,7 @@ long prev_time = 0;
 void setup() {  
   Serial.begin(115200);
   pinMode(DHTPin, INPUT);
+  pinMode(LEDPin, OUTPUT);
 
   dht.begin();
   setup_wifi();
@@ -33,21 +35,27 @@ void setup() {
 }
 
 void setup_wifi() {
+  digitalWrite(LEDPin, HIGH);
   Serial.print("Connecting to network:");
   Serial.println(network_ssid);
 
   WiFi.begin(network_ssid, network_password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    digitalWrite(LEDPin, LOW);
+    delay(100);
+    digitalWrite(LEDPin, HIGH);
+    delay(400);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  digitalWrite(LEDPin, LOW);
 }
 
 void reconnect_mqtt() {
+    digitalWrite(LEDPin, HIGH);
     while (!client.connected()) {
       Serial.print("Attempting MQTT connection...");
       if (client.connect("ESP32-ROOM", "USERNAME", "PASSWORD")) {
@@ -60,6 +68,7 @@ void reconnect_mqtt() {
         delay(5000);
       }
     }
+    digitalWrite(LEDPin, LOW);
 }
 
 void loop() {
