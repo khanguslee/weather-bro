@@ -44,4 +44,6 @@ Edit the sketch for the ESP32 to the correct Network SSID and password. Make sur
 - [ ] Add winston logging
 - [ ] Add travisCI
 - [ ] Integrate MongoDB to store data
-- [ ] LED to display unsuccessful connection to MQTT Broker
+- [x] LED to display unsuccessful connection to MQTT Broker
+- [ ] Hovering over circles show data value
+- [ ] Circuit diagram of microcontroller and associated sensors/output
