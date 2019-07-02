@@ -4,6 +4,23 @@ ESP32 microcontroller that feeds weather data via MQTT to a MQTT Broker
 
 # Getting Started
 
+## Software
+
+Install node libraries with:
+
+```
+npm install
+```
+
+Using [dotenv](https://github.com/motdotla/dotenv) library, we can store environment variables within a `.env` file. Create a `.env` file and add the necessary environment variables:
+
+| Environment Variable | Value                            |
+| -------------------- | -------------------------------- |
+| MQTT_SERVER          | Address of the MQTT broker       |
+| MQTT_PORT            | Port of the MQTT broker          |
+| MQTT_USERNAME        | Username to use MQTT broker with |
+| MQTT_PASSWORD        | Password for the username        |
+
 ## Equipment
 
 - ESP32 DEVKIT
@@ -27,3 +44,4 @@ Edit the sketch for the ESP32 to the correct Network SSID and password. Make sur
 - [ ] Add winston logging
 - [ ] Add travisCI
 - [ ] Integrate MongoDB to store data
+- [ ] LED to display unsuccessful connection to MQTT Broker
