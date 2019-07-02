@@ -34,7 +34,7 @@ function setupTemperatureGraph() {
     .attr('class', 'axis')
     .attr('id', 'x-axis')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(xScale));
+    .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%Y-%m-%d %H:%M:%S')));
 
   svg
     .append('g')
@@ -70,7 +70,9 @@ function temperatureDataHandler(inputData) {
     .curve(d3.curveMonotoneX);
 
   const svg = d3.select('#temperature-graph svg');
-  svg.selectAll('#x-axis').call(d3.axisBottom(xScale));
+  svg
+    .selectAll('#x-axis')
+    .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M:%S')));
   svg
     .append('path')
     .datum(temperatureData.data)
@@ -84,12 +86,8 @@ function temperatureDataHandler(inputData) {
     .enter()
     .append('circle') // Uses the enter().append() method
     .attr('class', 'dot') // Assign a class for styling
-    .attr('cx', function(d, i) {
-      return xScale(d.time);
-    })
-    .attr('cy', function(d) {
-      return yScale(d.data);
-    })
+    .attr('cx', d => xScale(d.time))
+    .attr('cy', d => yScale(d.data))
     .attr('r', 3)
     .attr('transform', `translate(50,200)`);
 }
