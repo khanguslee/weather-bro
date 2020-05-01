@@ -1,5 +1,7 @@
 #include <TFT_eSPI.h> 
 #include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
 #include "DHT.h"
 
 #define DHTTYPE DHT22
@@ -10,14 +12,27 @@ float temperature = 0;
 float humidity = 0;
 long prev_time = 0;
 
+const int ldrPin = 15;
+
+Adafruit_BMP280 bmp;
+
 TFT_eSPI tft = TFT_eSPI();
 
 void setup()
 {
     Serial.begin(115200);
-    pinMode(DHTPin, INPUT);
 
+    // Setup DHT
+    pinMode(DHTPin, INPUT);
     dht.begin();
+
+    if (!bmp.begin(0x76)) {
+      Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+      while (100);
+    }
+
+    // Setup LDR
+    pinMode(ldrPin, INPUT);
 
     // Setup OLED display
     tft.init();
@@ -35,23 +50,34 @@ void loop()
         
         
         temperature = dht.readTemperature();
-        char temperature_string[8];
-        dtostrf(temperature, 1, 2, temperature_string);
+        char temperatureString[8];
+        dtostrf(temperature, 1, 2, temperatureString);
         Serial.print("Temperature: ");
-        Serial.println(temperature_string);       
+        Serial.println(temperatureString);       
 
 
         humidity = dht.readHumidity();
-        char humidity_string[8];
-        dtostrf(humidity, 1, 2, humidity_string);
+        char humidityString[8];
+        dtostrf(humidity, 1, 2, humidityString);
         Serial.print("Humidity: ");
-        Serial.println(humidity_string);
+        Serial.println(humidityString);
 
-        tft_display(temperature_string, humidity_string);
+        int pressureValue = bmp.readPressure() / 100.0F;
+        char pressureString[8];
+        dtostrf(pressureValue, 1, 2, pressureString);
+        Serial.print("Pressure = ");
+        Serial.println(pressureValue);
+
+        tft_display(temperatureString, humidityString, pressureString);
+
+        int ldrValue = analogRead(ldrPin);
+        int adjustedLdrValue = map(ldrValue, 0, 4095, 0, 1000);
+        Serial.print("LDR: ");
+        Serial.println(adjustedLdrValue);
     }
 }
 
-void tft_display(char* temperature, char* humidity) {
+void tft_display(char* temperature, char* humidity, char* pressure) {
   // Set "cursor" at top left corner of display (0,0) and select font 4
   tft.setCursor(0, 0, 4);
 
@@ -60,4 +86,7 @@ void tft_display(char* temperature, char* humidity) {
  
   tft.println("Humidity: ");
   tft.println(humidity);
+
+  tft.println("Pressure: ");
+  tft.println(pressure);
 }
